@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'ListView demo'),
     );
   }
 }
@@ -29,6 +29,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  bool isEmpty = false;
+  final ScrollController _controller =
+      ScrollController(initialScrollOffset: 0.0);
 
   void _incrementCounter() {
     setState(() {
@@ -42,31 +45,57 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: GestureDetector(
+          onTap: () {
+            _controller.animateTo(-20.0,
+                duration: const Duration(seconds: 1), curve: Curves.bounceOut);
+          },
+          child: Text(widget.title),
+        ),
       ),
-      body: ListView.separated(
-        itemCount: 3, // list view total item
-        //cacheExtent: 0, // change cache size
-        separatorBuilder: (context, index) {
-          if(index == 0) {
-            return const Divider(thickness: 4,);
-          }
-          return const Divider();
-        },
-        itemBuilder: (context, index) {
-          print('building $index');
-          return Container(
-            //color: Colors.blue[index % 5 * 100],
-            height: 100,
-            alignment: Alignment.center,
-            child: Text("$index"),
+      body: isEmpty
+          ? const Center(
+              child: Text("Hooray, no spam here!!"),
+            )
+          //scrollbar widget there are show scrollbar in screen
+          : Scrollbar(
+              controller: _controller,
+              child: Padding(
+                padding: const EdgeInsets.all(0.0), // viewport add padding
+                child: ListView.builder(
+                  //android scroll physical is ClampingScrollPhysics
+                  //ios scroll physical is BouncingScrollPhysics
+                  physics: const NeverScrollableScrollPhysics(), // change scroll physics or effects
+                  controller: _controller,
+                  padding: const EdgeInsets.only(bottom: 128),
+                  // when list is start or list is end will have spacing. but when scroll is middle the padding will missing
+                  itemCount: 30,
+                  itemExtent: 60,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: const Icon(Icons.person),
+                      title: const Text("Name"),
+                      subtitle: const Text("Subtitle"),
+                      trailing: IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final offset = _controller.offset;
+          _controller.animateTo(
+            offset + 200,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.linear,
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
         tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.arrow_downward),
       ),
     );
   }
