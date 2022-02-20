@@ -29,50 +29,92 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  List<String> data = List.generate(60, (index) => '$index item');
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData mediaQueryData = MediaQuery.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const TextField(
-          decoration: InputDecoration(
-            fillColor: Colors.white,
-            filled: true,
-          ),
-        ),
+        title: Text(widget.title),
       ),
-      body: NotificationListener<OverscrollNotification>(
-        onNotification: (OverscrollNotification notification) {
-          print(notification.overscroll);
-          // print('====dragDetails ${event.dragDetails}');
-          // print('====dragDetails ${event.metrics.pixels}');
-          // if true is event is intercept no need to pop
-          //false is just read continue to pop event
-          return true;
-        },
-        child: ListView.builder(
-          //default keyboardDismissBehavior is manual
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          itemBuilder: (context, index) {
-            return Container(
-              color: Colors.blue[index % 9 * 100],
-              height: 50,
-              child: Center(child: Text('$index')),
-            );
-          },
-          itemCount: 100,
-        ),
+      body: ListView.builder(
+        itemBuilder: _buildItems,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.arrow_downward),
+      ),
+    );
+  }
+
+  Widget _buildItems(BuildContext context, int index) {
+    return Dismissible(
+      key: ValueKey<String>(data[index]),
+      background: buildBackground(),
+      secondaryBackground: buildSecondaryBackground(),
+      child: ItemBox(
+        info: data[index],
+      ),
+      onDismissed: (direction) => _onDismissed(direction, index),
+      confirmDismiss: _confirmDismiss,
+    );
+  }
+
+  Widget buildBackground() {
+    return Container(
+      color: Colors.green,
+      alignment: const Alignment(-0.9, 0),
+      child: const Icon(
+        Icons.check,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget buildSecondaryBackground() {
+    return Container(
+      color: Colors.red,
+      alignment: const Alignment(0.9, 0),
+      child: const Icon(
+        Icons.close,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  void _onDismissed(DismissDirection direction, int index) {
+    setState(() {
+      data.removeAt(index);
+    });
+  }
+
+  Future<bool?> _confirmDismiss(DismissDirection direction) async {
+    await Future.delayed(const Duration(seconds: 2));
+    print('_confirmDismiss: $direction');
+    //if end to start will remove
+    return direction != DismissDirection.startToEnd;
+  }
+}
+
+class ItemBox extends StatelessWidget {
+  const ItemBox({Key? key, required this.info}) : super(key: key);
+  final String info;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      height: 56,
+      child: Text(
+        info,
+        style: const TextStyle(fontSize: 20),
       ),
     );
   }
