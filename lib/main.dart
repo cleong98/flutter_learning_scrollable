@@ -29,71 +29,48 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  bool isEmpty = false;
-  final ScrollController _controller =
-      ScrollController(initialScrollOffset: 0.0);
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
   }
-
-  //cache based on your device  height maybe have height 1/3
-
   @override
   Widget build(BuildContext context) {
+    final MediaQueryData mediaQueryData = MediaQuery.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
-          onTap: () {
-            _controller.animateTo(-20.0,
-                duration: const Duration(seconds: 1), curve: Curves.bounceOut);
-          },
-          child: Text(widget.title),
+        title: const TextField(
+          decoration: InputDecoration(
+            fillColor: Colors.white,
+            filled: true,
+          ),
         ),
       ),
-      body: isEmpty
-          ? const Center(
-              child: Text("Hooray, no spam here!!"),
-            )
-          //scrollbar widget there are show scrollbar in screen
-          : Scrollbar(
-              controller: _controller,
-              child: Padding(
-                padding: const EdgeInsets.all(0.0), // viewport add padding
-                child: ListView.builder(
-                  //android scroll physical is ClampingScrollPhysics
-                  //ios scroll physical is BouncingScrollPhysics
-                  physics: const NeverScrollableScrollPhysics(), // change scroll physics or effects
-                  controller: _controller,
-                  padding: const EdgeInsets.only(bottom: 128),
-                  // when list is start or list is end will have spacing. but when scroll is middle the padding will missing
-                  itemCount: 30,
-                  itemExtent: 60,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: const Icon(Icons.person),
-                      title: const Text("Name"),
-                      subtitle: const Text("Subtitle"),
-                      trailing: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.delete_outline),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final offset = _controller.offset;
-          _controller.animateTo(
-            offset + 200,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.linear,
-          );
+      body: NotificationListener<OverscrollNotification>(
+        onNotification: (OverscrollNotification notification) {
+          print(notification.overscroll);
+          // print('====dragDetails ${event.dragDetails}');
+          // print('====dragDetails ${event.metrics.pixels}');
+          // if true is event is intercept no need to pop
+          //false is just read continue to pop event
+          return true;
         },
+        child: ListView.builder(
+          //default keyboardDismissBehavior is manual
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          itemBuilder: (context, index) {
+            return Container(
+              color: Colors.blue[index % 9 * 100],
+              height: 50,
+              child: Center(child: Text('$index')),
+            );
+          },
+          itemCount: 100,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.arrow_downward),
       ),
