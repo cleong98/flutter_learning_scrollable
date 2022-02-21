@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 
 void main() {
   runApp(const MyApp());
@@ -28,93 +30,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  List<String> data = List.generate(60, (index) => '$index item');
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        itemBuilder: _buildItems,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.arrow_downward),
-      ),
-    );
-  }
-
-  Widget _buildItems(BuildContext context, int index) {
-    return Dismissible(
-      key: ValueKey<String>(data[index]),
-      background: buildBackground(),
-      secondaryBackground: buildSecondaryBackground(),
-      child: ItemBox(
-        info: data[index],
-      ),
-      onDismissed: (direction) => _onDismissed(direction, index),
-      confirmDismiss: _confirmDismiss,
-    );
-  }
-
-  Widget buildBackground() {
-    return Container(
-      color: Colors.green,
-      alignment: const Alignment(-0.9, 0),
-      child: const Icon(
-        Icons.check,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget buildSecondaryBackground() {
-    return Container(
-      color: Colors.red,
-      alignment: const Alignment(0.9, 0),
-      child: const Icon(
-        Icons.close,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  void _onDismissed(DismissDirection direction, int index) {
-    setState(() {
-      data.removeAt(index);
-    });
-  }
-
-  Future<bool?> _confirmDismiss(DismissDirection direction) async {
-    await Future.delayed(const Duration(seconds: 2));
-    print('_confirmDismiss: $direction');
-    //if end to start will remove
-    return direction != DismissDirection.startToEnd;
-  }
-}
-
-class ItemBox extends StatelessWidget {
-  const ItemBox({Key? key, required this.info}) : super(key: key);
-  final String info;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      height: 56,
-      child: Text(
-        info,
-        style: const TextStyle(fontSize: 20),
+      body: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 100, //max width
+        ),
+        // gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        //   crossAxisCount: 4,
+        //   childAspectRatio: 16 / 9
+        //),
+        itemBuilder: (context, index) {
+          return LayoutBuilder(
+            builder: (context, constraint) {
+              return Container(
+                color: Colors.blue[index % 8 * 100],
+              );
+            }
+          );
+        },
       ),
     );
   }
